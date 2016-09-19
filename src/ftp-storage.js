@@ -49,6 +49,8 @@ class FTPStorage {
         return Object.assign({}, x, {
           isFile: stat.isFile(),
           isDir: stat.isDirectory(),
+          mode: stat.mode,
+          nlink: stat.nlink,
           size: stat.size,
           ctime: stat.ctime,
           mtime: stat.mtime

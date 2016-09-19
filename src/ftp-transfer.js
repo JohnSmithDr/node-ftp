@@ -21,7 +21,7 @@ class FTPTransfer {
 
         this._dest.on('end', () => {
           this._s = 'completed';
-          return resolve();
+          return resolve(this);
         });
 
         this._dest.on('error', (err) => {

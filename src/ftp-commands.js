@@ -1,5 +1,9 @@
 'use strict';
 
+const stream = require('stream');
+const listFormatter = require('./list-formatter');
+const FTPTransfer = require('./ftp-transfer');
+
 function _parseEndPoint(args) {
   let m = /^(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3}),(\d{1,3})$/.exec(args);
 
@@ -57,8 +61,28 @@ function pwd(args, client, server) {
   return client.send(257, `Current working directory: "${client.storage.workingDir}"`);
 }
 
-function list(args, client, server) {
+function list(args, client) {
 
+  let dataToSend;
+
+  return client.storage.list()
+    .then(files => {
+      dataToSend = listFormatter.format(files);
+      return client.send(150, 'Opening data connection');
+    })
+    .then(() => {
+      return FTPTransfer
+        .createSend(client.state['remote'], dataToSend)
+        .catch(err => {
+          return client
+            .send(425, 'Cannot open data connection')
+            .thenThrow(err);
+        });
+    })
+    .then(t => t.transfer())
+    .then(t => {
+      return client.send(250, 'Closing data connection');
+    });
 }
 
 module.exports = {
