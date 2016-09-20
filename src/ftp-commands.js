@@ -95,6 +95,10 @@ function cwd(args, client) {
     });
 }
 
+function cdup(args, client) {
+  // todo: cd up
+}
+
 function list(args, client) {
 
   let dataToSend;
@@ -125,7 +129,53 @@ function list(args, client) {
     });
 }
 
+function mkdir(args, client) {
+  // todo: mkdir
+}
+
+function rnfr(args, client) {
+  // todo: rename from
+}
+
+function rnto(args, client) {
+  // todo: rename to
+}
+
+function dele(args, client) {
+  // todo: delete file
+}
+
+function size(args, client) {
+  // todo: get file size
+}
+
+function retr(args, client) {
+  // todo: download file
+}
+
+function stor(args, client) {
+  // todo: upload file
+}
+
+function appe(args, client) {
+  // todo: append file
+}
+
+function abor(args, client) {
+  // todo: abort current transfer
+}
+
+function rest(args, client) {
+  // todo: rest
+}
+
+function quit(args, client) {
+  // todo: quit
+}
+
 module.exports = {
   syst, user, pass, feat, opts, noop, type, port,
-  pwd,  cwd,  list
+  pwd,  cwd, cdup, mkdir, list, rnfr, rnto, dele,
+  size, retr, stor, appe, abor, rest,
+  quit
 };
