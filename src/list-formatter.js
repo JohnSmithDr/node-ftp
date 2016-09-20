@@ -2,26 +2,33 @@
 
 const moment = require('moment');
 
-function formatDate(date) {
-  return moment(date).format('MMM DD HH:mm');
+const formatDate = (date) => moment(date).format('MMM DD HH:mm');
+const fileDesc = (stat) => stat["mode"] & 40000 ? 'd' : '-';
+const ownerRead = (stat) => stat["mode"] & 400 ? 'r' : '-';
+const ownerWrite = (stat) => stat["mode"] & 200 ? 'w' : '-';
+const ownerExecute = (stat) => stat["mode"] & 100 ? 'w' : '-';
+const groupRead = (stat) => stat["mode"] & 40 ? 'r' : '-';
+const groupWrite = (stat) => stat["mode"] & 20 ? 'w' : '-';
+const groupExecute = (stat) => stat["mode"] & 10 ? 'x' : '-';
+const othersRead = (stat) => stat["mode"] & 4 ? 'r' : '-';
+const othersWrite = (stat) => stat["mode"] & 2 ? 'w' : '-';
+const othersExecute = (stat) => stat["mode"] & 1 ? 'x' : '-';
+
+function formatFileStat(x) {
+  let fd = fileDesc(x)
+    , ur = ownerRead(x)
+    , uw = ownerWrite(x)
+    , ux = ownerExecute(x)
+    , gr = groupRead(x)
+    , gw = groupWrite(x)
+    , gx = groupExecute(x)
+    , or = othersRead(x)
+    , ow = othersWrite(x)
+    , ox = othersExecute(x)
+    , mt = formatDate(x.mtime);
+  return `${fd}${ur}${uw}${ux}${gr}${gw}${gx}${or}${ow}${ox} ${x.nlink} ${x.uid} ${x.gid} ${x.size} ${mt} ${x.fileName}\r\n`;
 }
 
 module.exports.format = function (list) {
-
-  let lines = list.map(x => {
-    let fd = x.isDir ? 'd' : '-';
-    let ur = '-';
-    let uw = '-';
-    let ux = '-';
-    let gr = '-';
-    let gw = '-';
-    let gx = '-';
-    let or = '-';
-    let ow = '-';
-    let ox = '-';
-    let mt = formatDate(x.mtime);
-    return `${fd}${ur}${uw}${ux}${gr}${gw}${gx}${or}${ow}${ox} ${x.nlink} - - ${x.size} ${mt} ${x.fileName}`;
-  });
-
-
+  return list.map(x => formatFileStat(x)).join('');
 };

@@ -19,7 +19,7 @@ class FTPConnection extends EventEmitter {
     super();
     this._dest = conn;
     this._state = {};
-    this._storage = FTPStorage.create('~/');
+    this._storage = FTPStorage.create();
     this._init();
   }
 

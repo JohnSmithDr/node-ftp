@@ -33,3 +33,7 @@ class BufferStream extends Readable {
 module.exports.fromBuffer = function (buffer) {
   return new BufferStream(buffer);
 };
+
+module.exports.fromText = function (text) {
+  return new BufferStream(new Buffer(text));
+};

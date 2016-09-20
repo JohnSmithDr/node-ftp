@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const Promise = require('bluebird');
@@ -28,7 +29,6 @@ class FTPStorage {
 
   list() {
     let realPath = this.realPath;
-    console.log(realPath);
     return afs.readdirAsync(realPath)
       .then(names => {
         let info = names
@@ -46,15 +46,12 @@ class FTPStorage {
   _getFileInfo(x) {
     return afs.statAsync(x.realPath)
       .then(stat => {
-        return Object.assign({}, x, {
-          isFile: stat.isFile(),
-          isDir: stat.isDirectory(),
-          mode: stat.mode,
-          nlink: stat.nlink,
-          size: stat.size,
-          ctime: stat.ctime,
-          mtime: stat.mtime
-        });
+        return Object.assign({}, x,
+          _.pick(stat, ['uid', 'gid', 'mode', 'nlink', 'size', 'ctime', 'mtime']),
+          {
+            isFile: stat.isFile(),
+            isDir: stat.isDirectory(),
+          });
       });
   }
 

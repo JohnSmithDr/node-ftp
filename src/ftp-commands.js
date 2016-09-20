@@ -1,6 +1,6 @@
 'use strict';
 
-const stream = require('stream');
+const stream = require('./stream');
 const listFormatter = require('./list-formatter');
 const FTPTransfer = require('./ftp-transfer');
 
@@ -36,7 +36,7 @@ function pass(password, client, server) {
   return client.send(230, 'User logged in, proceed');
 }
 
-function type(type, client, server) {
+function type(type, client) {
 
   if (type === 'A' || type === 'I') {
     return client
@@ -47,7 +47,7 @@ function type(type, client, server) {
   return client.send(202, `Not supported type: ${type}`);
 }
 
-function port(args, client, server) {
+function port(args, client) {
   let ep = _parseEndPoint(args);
   if (!ep) {
     return client.send(501, 'Syntax error in parameters or arguments');
@@ -57,8 +57,12 @@ function port(args, client, server) {
     .send(200, `OK. Port ({${ep.host}:${ep.port}) accepted`);
 }
 
-function pwd(args, client, server) {
+function pwd(args, client) {
   return client.send(257, `Current working directory: "${client.storage.workingDir}"`);
+}
+
+function cwd(args, client) {
+
 }
 
 function list(args, client) {
@@ -67,7 +71,8 @@ function list(args, client) {
 
   return client.storage.list()
     .then(files => {
-      dataToSend = listFormatter.format(files);
+      let content = listFormatter.format(files);
+      dataToSend = stream.fromText(content);
       return client.send(150, 'Opening data connection');
     })
     .then(() => {
@@ -81,7 +86,12 @@ function list(args, client) {
     })
     .then(t => t.transfer())
     .then(t => {
-      return client.send(250, 'Closing data connection');
+      if (t.state === 'completed')
+        return client.send(250, 'Closing data connection');
+      if (t.state === 'aborted')
+        ;
+      if (t.state === 'error')
+        return client.send(550, 'Error listing files');
     });
 }
 

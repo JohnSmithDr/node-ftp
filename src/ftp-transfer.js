@@ -52,7 +52,7 @@ class FTPTransfer {
       new Promise((resolve, reject) => {
         let conn = net.connect(p.port, p.host, (err) => {
           if (err) return reject(err);
-          return new FTPTransfer(d, conn);
+          resolve(new FTPTransfer(d, conn));
         });
       }),
       callback
