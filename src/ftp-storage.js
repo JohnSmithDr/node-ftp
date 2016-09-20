@@ -29,8 +29,7 @@ class FTPStorage {
 
   changeWorkingDir(name) {
     let realPath = this.realPath;
-    let destFilePath = path.join(realPath, name);
-    console.log(destFilePath);
+    let destFilePath = path.resolve(realPath, name);
     return this._exsist(destFilePath)
       .then(() => this._getFileStat(destFilePath))
       .catch(err => {
@@ -39,7 +38,7 @@ class FTPStorage {
       })
       .then(r => {
         if (!r.isDirectory()) return Promise.reject('Directory not found');
-        this._wd = path.join(this._wd, name);
+        this._wd = path.resolve(this._wd, name);
         return this.workingDir;
       });
   }

@@ -96,7 +96,14 @@ function cwd(args, client) {
 }
 
 function cdup(args, client) {
-  // todo: cd up
+  client.storage.changeWorkingDir('..')
+    .then(dir => client.send(250, `Changed working directory: "${dir}"`))
+    .catch(err => {
+      console.log(err);
+      return (typeof err === 'string')
+        ? client.send(550, err)
+        : client.send(550, 'Error');
+    });
 }
 
 function list(args, client) {
