@@ -34,6 +34,6 @@ module.exports.fromBuffer = function (buffer) {
   return new BufferStream(buffer);
 };
 
-module.exports.fromText = function (text) {
-  return new BufferStream(new Buffer(text));
+module.exports.fromText = function (text, encoding) {
+  return new BufferStream(new Buffer(text, encoding));
 };

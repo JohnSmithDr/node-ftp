@@ -39,8 +39,20 @@ function pass(password, client, server) {
 
 function feat(args, client, server) {
   let features = server.features;
-  let text = _.concat(['211-Features'], features, ['211 Features end', '']).join('\r\n');
+  let text = _.concat(['211-Features'], features, ['211 Features end']).join('\r\n');
   return client.sendText(text);
+}
+
+function opts(args, client, server) {
+  if (args.toUpperCase() === 'UTF8 ON') {
+    return client.send(200, 'UTF8 Enabled');
+  }
+  else if (args.toUpperCase() === 'UTF8 OFF') {
+    return client.send(200, 'UTF8 Disabled');
+  }
+  else {
+    client.send(451, 'Not supported');
+  }
 }
 
 function type(type, client) {
@@ -61,7 +73,7 @@ function port(args, client) {
   }
   return client
     .setState('remote', ep)
-    .send(200, `OK. Port ({${ep.host}:${ep.port}) accepted`);
+    .send(200, `OK. Port (${ep.host}:${ep.port}) accepted`);
 }
 
 function pwd(args, client) {
@@ -86,7 +98,7 @@ function list(args, client) {
   return client.storage.list()
     .then(files => {
       let content = listFormatter.format(files);
-      dataToSend = stream.fromText(content);
+      dataToSend = stream.fromText(content, client.state.encoding);
       return client.send(150, 'Opening data connection');
     })
     .then(() => {
@@ -114,6 +126,7 @@ module.exports = {
   user,
   pass,
   feat,
+  opts,
   type,
   port,
   pwd,
