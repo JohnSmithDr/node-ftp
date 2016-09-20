@@ -55,6 +55,10 @@ function opts(args, client, server) {
   }
 }
 
+function noop(args, client) {
+  return client.send(200, 'Noop');
+}
+
 function type(type, client) {
 
   if (type === 'A' || type === 'I') {
@@ -122,14 +126,6 @@ function list(args, client) {
 }
 
 module.exports = {
-  syst,
-  user,
-  pass,
-  feat,
-  opts,
-  type,
-  port,
-  pwd,
-  cwd,
-  list
+  syst, user, pass, feat, opts, noop, type, port,
+  pwd,  cwd,  list
 };
