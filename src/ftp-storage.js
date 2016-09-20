@@ -27,6 +27,23 @@ class FTPStorage {
     return path.join(this._init, this._wd);
   }
 
+  changeWorkingDir(name) {
+    let realPath = this.realPath;
+    let destFilePath = path.join(realPath, name);
+    console.log(destFilePath);
+    return this._exsist(destFilePath)
+      .then(() => this._getFileStat(destFilePath))
+      .catch(err => {
+        console.log(err);
+        Promise.reject('Not a directory');
+      })
+      .then(r => {
+        if (!r.isDirectory()) return Promise.reject('Directory not found');
+        this._wd = path.join(this._wd, name);
+        return this.workingDir;
+      });
+  }
+
   list() {
     let realPath = this.realPath;
     return afs.readdirAsync(realPath)
@@ -53,6 +70,14 @@ class FTPStorage {
             isDir: stat.isDirectory(),
           });
       });
+  }
+
+  _getFileStat(path) {
+    return afs.statAsync(path);
+  }
+
+  _exsist(path) {
+    return afs.accessAsync(path, fs.constants.F_OK);
   }
 
 }

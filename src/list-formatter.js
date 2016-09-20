@@ -3,7 +3,7 @@
 const moment = require('moment');
 
 const formatDate = (date) => moment(date).format('MMM DD HH:mm');
-const fileDesc = (stat) => stat["mode"] & 40000 ? 'd' : '-';
+const fileDesc = (stat) => stat.isDir ? 'd' : '-';
 const ownerRead = (stat) => stat["mode"] & 400 ? 'r' : '-';
 const ownerWrite = (stat) => stat["mode"] & 200 ? 'w' : '-';
 const ownerExecute = (stat) => stat["mode"] & 100 ? 'w' : '-';

@@ -62,7 +62,14 @@ function pwd(args, client) {
 }
 
 function cwd(args, client) {
-
+  client.storage.changeWorkingDir(args)
+    .then(dir => client.send(250, `Changed working directory: "${dir}"`))
+    .catch(err => {
+      console.log(err);
+      return (typeof err === 'string')
+        ? client.send(550, err)
+        : client.send(550, 'Error');
+    });
 }
 
 function list(args, client) {
@@ -102,5 +109,6 @@ module.exports = {
   type,
   port,
   pwd,
+  cwd,
   list
 };
