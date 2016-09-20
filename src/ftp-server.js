@@ -12,10 +12,15 @@ class FTPServer {
   constructor(port) {
     this._port = port;
     this._listener = null;
+    this._features = ['PORT'];
   }
 
   static create(port) {
     return new FTPServer(port);
+  }
+
+  get features() {
+    return this._features;
   }
 
   start(callback) {

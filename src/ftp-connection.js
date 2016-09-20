@@ -45,13 +45,14 @@ class FTPConnection extends EventEmitter {
   }
 
   send(code, message, callback) {
-    logger.info('ACK (%s) > %s %s', this.remoteEndPoint, code, message);
+    return this.sendText(`${code} ${message} \r\n`, callback);
+  }
+
+  sendText(text, callback) {
+    logger.info('ACK (%s) > %s', this.remoteEndPoint, text);
     return maybe(
       new Promise((resolve, reject) => {
-        this._dest.write(
-          `${code} ${message} \r\n`,
-          (err, r) => (err ? reject(err) : resolve(r))
-        );
+        this._dest.write(text, (err, r) => (err ? reject(err) : resolve(r)));
       })
       ,callback
     );

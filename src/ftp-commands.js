@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const stream = require('./stream');
 const listFormatter = require('./list-formatter');
 const FTPTransfer = require('./ftp-transfer');
@@ -34,6 +35,12 @@ function pass(password, client, server) {
   }
 
   return client.send(230, 'User logged in, proceed');
+}
+
+function feat(args, client, server) {
+  let features = server.features;
+  let text = _.concat(['211-Features'], features, ['211 Features end', '']).join('\r\n');
+  return client.sendText(text);
 }
 
 function type(type, client) {
@@ -106,6 +113,7 @@ module.exports = {
   syst,
   user,
   pass,
+  feat,
   type,
   port,
   pwd,
