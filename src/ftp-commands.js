@@ -45,10 +45,10 @@ function feat(args, client, server) {
 
 function opts(args, client, server) {
   if (args.toUpperCase() === 'UTF8 ON') {
-    return client.send(200, 'UTF8 Enabled');
+    return client.setState('encoding', 'utf8').send(200, 'UTF8 Enabled');
   }
   else if (args.toUpperCase() === 'UTF8 OFF') {
-    return client.send(200, 'UTF8 Disabled');
+    return client.setState('encoding', 'ascii').send(200, 'UTF8 Disabled');
   }
   else {
     client.send(451, 'Not supported');
@@ -136,8 +136,12 @@ function list(args, client) {
     });
 }
 
-function mkdir(args, client) {
+function mkd(name, client) {
   // todo: mkdir
+  client.storage.mkdir(name)
+    .then(path => {
+      return client.send(257, `Dir created: "${path}"`);
+    })
 }
 
 function rnfr(args, client) {
@@ -182,7 +186,7 @@ function quit(args, client) {
 
 module.exports = {
   syst, user, pass, feat, opts, noop, type, port,
-  pwd,  cwd, cdup, mkdir, list, rnfr, rnto, dele,
+  pwd,  cwd,  cdup, list, mkd,  rnfr, rnto, dele,
   size, retr, stor, appe, abor, rest,
   quit
 };

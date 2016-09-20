@@ -28,8 +28,8 @@ class FTPStorage {
   }
 
   changeWorkingDir(name) {
-    let realPath = this.realPath;
-    let destFilePath = path.resolve(realPath, name);
+    let destFilePath = this._resolveRealPath(name);
+    console.log(destFilePath);
     return this._exsist(destFilePath)
       .then(() => this._getFileStat(destFilePath))
       .catch(err => {
@@ -38,7 +38,7 @@ class FTPStorage {
       })
       .then(r => {
         if (!r.isDirectory()) return Promise.reject('Directory not found');
-        this._wd = path.resolve(this._wd, name);
+        this._wd = this._resolveWorkingDir(name);
         return this.workingDir;
       });
   }
@@ -57,6 +57,23 @@ class FTPStorage {
           });
         return Promise.map(info, x => this._getFileInfo(x));
       });
+  }
+
+  mkdir(name) {
+    let realPath = this.realPath;
+    let newPath = path.resolve(realPath, name);
+    return afs
+      .mkdirAsync(newPath)
+      .thenReturn(path.join(this._wd, name));
+  }
+
+  _resolveRealPath(name) {
+    let rp = this.realPath;
+    return name.startsWith('.') ? path.resolve(rp, name) : path.join(rp, name);
+  }
+
+  _resolveWorkingDir(name) {
+    return name.startsWith('.') ? path.resolve(this._wd, name) : path.join(this._wd, name);
   }
 
   _getFileInfo(x) {
