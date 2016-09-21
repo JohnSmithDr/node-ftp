@@ -5,95 +5,105 @@ const fs = require('fs');
 const path = require('path');
 const Promise = require('bluebird');
 
-let afs = Promise.promisifyAll(fs);
 let defaultRoot = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+
+const _readdir = Promise.promisify(fs.readdir);
+const _mkdir = Promise.promisify(fs.mkdir);
+const _stat = Promise.promisify(fs.stat);
+const _access = Promise.promisify(fs.access);
+const _exsist = (path) => _access(path, fs.constants.F_OK);
 
 class FTPStorage {
 
   constructor(root) {
-    this._init = root || defaultRoot;
-    this._wd = '/';
+    this._root = root || defaultRoot;
+    this._path = ['/'];
   }
 
   static create(root) {
     return new FTPStorage(root);
   }
 
-  get workingDir() {
-    return this._wd;
+  rwd() {
+    return path.join(this._root, this.pwd());
   }
 
-  get realPath() {
-    return path.join(this._init, this._wd);
+  pwd() {
+    return path.resolve.apply(path, this._path);
   }
 
-  changeWorkingDir(name) {
-    let destFilePath = this._resolveRealPath(name);
-    console.log(destFilePath);
-    return this._exsist(destFilePath)
-      .then(() => this._getFileStat(destFilePath))
+  cd(name) {
+
+    if (name == '.') {
+      return Promise.resolve(this.pwd());
+    }
+
+    if (name == '..') {
+      if (this._path.length > 1) this._path.pop();
+      return Promise.resolve(this.pwd());
+    }
+
+    let p, pp;
+
+    if (name.startsWith('/')) {
+      p = path.join(this._root, name);
+      pp = ['/'].concat(name.split(/\/+/).filter(x => x));
+    }
+    else {
+      p = path.join(this.rwd(), name);
+      pp = this._path.concat([name]);
+    }
+
+    return _exsist(p)
+      .then(() => _stat(p))
       .catch(err => {
         console.log(err);
         Promise.reject('Not a directory');
       })
       .then(r => {
         if (!r.isDirectory()) return Promise.reject('Directory not found');
-        this._wd = this._resolveWorkingDir(name);
-        return this.workingDir;
+        this._path = pp;
+        return this.pwd();
       });
   }
 
   list() {
-    let realPath = this.realPath;
-    return afs.readdirAsync(realPath)
+    let wd = this.pwd();
+    let rwd = this.rwd();
+    return _readdir(rwd)
       .then(names => {
         let info = names
           .map(name => {
             return {
-              fileName: name,
-              filePath: path.join(this._wd, name),
-              realPath: path.resolve(realPath, name)
+              name: name,
+              path: path.join(wd, name),
+              fullPath: path.resolve(rwd, name)
             };
           });
-        return Promise.map(info, x => this._getFileInfo(x));
+        return Promise.map(info, x => this._fileInfo(x));
       });
   }
 
   mkdir(name) {
-    let realPath = this.realPath;
-    let newPath = path.resolve(realPath, name);
-    return afs
-      .mkdirAsync(newPath)
-      .thenReturn(path.join(this._wd, name));
+    let rwd = this.rwd();
+    let np = path.join(rwd, name);
+    return _mkdir(np).thenReturn(np);
   }
 
-  _resolveRealPath(name) {
-    let rp = this.realPath;
-    return name.startsWith('.') ? path.resolve(rp, name) : path.join(rp, name);
+  rm() {
+
   }
 
-  _resolveWorkingDir(name) {
-    return name.startsWith('.') ? path.resolve(this._wd, name) : path.join(this._wd, name);
-  }
-
-  _getFileInfo(x) {
-    return afs.statAsync(x.realPath)
+  _fileInfo(x) {
+    return _stat(x.fullPath)
       .then(stat => {
         return Object.assign({}, x,
           _.pick(stat, ['uid', 'gid', 'mode', 'nlink', 'size', 'ctime', 'mtime']),
           {
             isFile: stat.isFile(),
-            isDir: stat.isDirectory(),
+            isDir: stat.isDirectory()
           });
       });
-  }
-
-  _getFileStat(path) {
-    return afs.statAsync(path);
-  }
-
-  _exsist(path) {
-    return afs.accessAsync(path, fs.constants.F_OK);
   }
 
 }

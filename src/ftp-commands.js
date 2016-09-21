@@ -81,11 +81,11 @@ function port(args, client) {
 }
 
 function pwd(args, client) {
-  return client.send(257, `Current working directory: "${client.storage.workingDir}"`);
+  return client.send(257, `Current working directory: "${client.storage.pwd()}"`);
 }
 
 function cwd(args, client) {
-  client.storage.changeWorkingDir(args)
+  client.storage.cd(args)
     .then(dir => client.send(250, `Changed working directory: "${dir}"`))
     .catch(err => {
       console.log(err);
@@ -96,7 +96,7 @@ function cwd(args, client) {
 }
 
 function cdup(args, client) {
-  client.storage.changeWorkingDir('..')
+  client.storage.cd('..')
     .then(dir => client.send(250, `Changed working directory: "${dir}"`))
     .catch(err => {
       console.log(err);
@@ -137,11 +137,10 @@ function list(args, client) {
 }
 
 function mkd(name, client) {
-  // todo: mkdir
   client.storage.mkdir(name)
     .then(path => {
       return client.send(257, `Dir created: "${path}"`);
-    })
+    });
 }
 
 function rnfr(args, client) {

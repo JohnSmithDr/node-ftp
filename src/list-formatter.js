@@ -6,7 +6,7 @@ const formatDate = (date) => moment(date).format('MMM DD HH:mm');
 const fileDesc = (stat) => stat.isDir ? 'd' : '-';
 const ownerRead = (stat) => stat["mode"] & 400 ? 'r' : '-';
 const ownerWrite = (stat) => stat["mode"] & 200 ? 'w' : '-';
-const ownerExecute = (stat) => stat["mode"] & 100 ? 'w' : '-';
+const ownerExecute = (stat) => stat["mode"] & 100 ? 'x' : '-';
 const groupRead = (stat) => stat["mode"] & 40 ? 'r' : '-';
 const groupWrite = (stat) => stat["mode"] & 20 ? 'w' : '-';
 const groupExecute = (stat) => stat["mode"] & 10 ? 'x' : '-';
@@ -26,7 +26,7 @@ function formatFileStat(x) {
     , ow = othersWrite(x)
     , ox = othersExecute(x)
     , mt = formatDate(x.mtime);
-  return `${fd}${ur}${uw}${ux}${gr}${gw}${gx}${or}${ow}${ox} ${x.nlink} ${x.uid} ${x.gid} ${x.size} ${mt} ${x.fileName}\r\n`;
+  return `${fd}${ur}${uw}${ux}${gr}${gw}${gx}${or}${ow}${ox} ${x.nlink} ${x.uid} ${x.gid} ${x.size} ${mt} ${x.name}\r\n`;
 }
 
 module.exports.format = function (list) {
