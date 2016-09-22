@@ -17,6 +17,7 @@ let _defaultState = {
   username: null,
   encoding: 'ascii',
   type: 'A',
+  mode: 'S',
   remote: null,
   rename: null
 };

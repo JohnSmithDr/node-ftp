@@ -59,7 +59,9 @@ function noop(args, client) {
   return client.send(200, 'Noop');
 }
 
-function type(type, client) {
+function type(args, client) {
+
+  let type = args.toUpperCase();
 
   if (type === 'A' || type === 'I') {
     return client
@@ -68,6 +70,19 @@ function type(type, client) {
   }
 
   return client.send(202, `Not supported type: ${type}`);
+}
+
+function mode(args, client) {
+
+  let mode = args.toUpperCase();
+
+  if (mode === 'S') {
+    return client
+      .setState('mode', mode)
+      .send(200, `OK. Mode ${mode} accepted`);
+  }
+
+  return client.send(202, `Not supported mode: ${mode}`);
 }
 
 function port(args, client) {
@@ -200,7 +215,7 @@ function quit(args, client) {
 }
 
 module.exports = {
-  syst, user, pass, feat, opts, noop, type, port,
+  syst, user, pass, feat, opts, noop, type, mode, port,
   pwd,  cwd,  cdup, list, mkd,  rmd,  rnfr, rnto,
   dele, size, retr, stor, appe, abor, rest,
   rein, quit
