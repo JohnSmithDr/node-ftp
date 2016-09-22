@@ -13,12 +13,6 @@ function _parseCommand(data) {
   return name ? ({ name, args }) : null;
 }
 
-function _getErrorMessage(err) {
-  if (typeof err === 'string') return err;
-  if (err instanceof Error) return err.message;
-  return err.toString();
-}
-
 let _defaultState = {
   username: null,
   encoding: 'ascii',
@@ -76,7 +70,7 @@ class FTPConnection extends EventEmitter {
   }
 
   sendError(code, err, callback) {
-    return this.send(code, _getErrorMessage(err), callback);
+    return this.send(code, err.message, callback);
   }
 
   sendText(text, callback) {

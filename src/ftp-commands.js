@@ -87,23 +87,13 @@ function pwd(args, client) {
 function cwd(args, client) {
   client.storage.cd(args)
     .then(dir => client.send(250, `Changed working directory: "${dir}"`))
-    .catch(err => {
-      console.log(err);
-      return (typeof err === 'string')
-        ? client.send(550, err)
-        : client.send(550, 'Error');
-    });
+    .catch(err => client.sendError(550, err));
 }
 
 function cdup(args, client) {
   client.storage.cd('..')
     .then(dir => client.send(250, `Changed working directory: "${dir}"`))
-    .catch(err => {
-      console.log(err);
-      return (typeof err === 'string')
-        ? client.send(550, err)
-        : client.send(550, 'Error');
-    });
+    .catch(err => client.sendError(550, err));
 }
 
 function list(args, client) {
@@ -138,13 +128,13 @@ function list(args, client) {
 
 function mkd(name, client) {
   client.storage.mkdir(name)
-    .then(path => client.send(257, `Directory created: "${path}"`))
+    .then(path => client.send(257, 'Directory created'))
     .catch(err => client.sendError(550, err));
 }
 
 function rmd(name, client) {
   client.storage.rmdir(name)
-    .then(path => client.send(250, `Directory removed: "${path}"`))
+    .then(path => client.send(250, 'Directory removed'))
     .catch(err => client.sendError(550, err));
 }
 
@@ -152,7 +142,7 @@ function rnfr(name, client) {
   return client.storage.exists(name)
     .then(exists => {
       if (!exists) {
-        return client.send(550, 'Path dose not exist');
+        return client.send(550, 'No such file or directory');
       }
       client.setState('rename', name);
       return client.send(350, `Rename started`);
