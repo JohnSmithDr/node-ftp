@@ -138,9 +138,14 @@ function list(args, client) {
 
 function mkd(name, client) {
   client.storage.mkdir(name)
-    .then(path => {
-      return client.send(257, `Dir created: "${path}"`);
-    });
+    .then(path => client.send(257, `Directory created: "${path}"`))
+    .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
+}
+
+function rmd(name, client) {
+  client.storage.rmdir(name)
+    .then(path => client.send(250, `Directory removed: "${path}"`))
+    .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
 }
 
 function rnfr(args, client) {
@@ -185,7 +190,7 @@ function quit(args, client) {
 
 module.exports = {
   syst, user, pass, feat, opts, noop, type, port,
-  pwd,  cwd,  cdup, list, mkd,  rnfr, rnto, dele,
-  size, retr, stor, appe, abor, rest,
+  pwd,  cwd,  cdup, list, mkd,  rmd,  rnfr, rnto,
+  dele, size, retr, stor, appe, abor, rest,
   quit
 };

@@ -9,6 +9,8 @@ let defaultRoot = process.env.HOME || process.env.HOMEPATH || process.env.USERPR
 
 const _readdir = Promise.promisify(fs.readdir);
 const _mkdir = Promise.promisify(fs.mkdir);
+const _rmdir = Promise.promisify(fs.rmdir);
+const _unlink = Promise.promisify(fs.unlink);
 const _stat = Promise.promisify(fs.stat);
 const _access = Promise.promisify(fs.access);
 const _exsist = (path) => _access(path, fs.constants.F_OK);
@@ -90,7 +92,17 @@ class FTPStorage {
     return _mkdir(np).thenReturn(np);
   }
 
-  rm() {
+  rmdir(name) {
+    let rwd = this.rwd();
+    let np = path.join(rwd, name);
+    return _stat(np)
+      .then(stat => {
+        if (!stat.isDirectory()) return Promise.reject('Not a directory');
+        return _rmdir(np).thenReturn(np);
+      });
+  }
+
+  rm(name) {
 
   }
 
@@ -109,9 +121,3 @@ class FTPStorage {
 }
 
 module.exports = FTPStorage;
-
-// let storage = FTPStorage.create();
-//
-// storage.list().then(r => {
-//   console.log(r);
-// });
