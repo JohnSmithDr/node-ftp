@@ -200,7 +200,8 @@ function rest(args, client) {
 }
 
 function rein(args, client) {
-  // todo: re-initialize connection
+  return client.reset()
+    .then(() => client.send(220, 'Service ready'));
 }
 
 function quit(args, client) {

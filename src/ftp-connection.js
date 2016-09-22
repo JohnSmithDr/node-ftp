@@ -19,14 +19,20 @@ function _getErrorMessage(err) {
   return err.toString();
 }
 
+let _defaultState = {
+  username: null,
+  encoding: 'ascii',
+  type: 'A',
+  remote: null,
+  rename: null
+};
+
 class FTPConnection extends EventEmitter {
 
   constructor(conn) {
     super();
     this._conn = conn;
-    this._state = {
-      encoding: 'ascii'
-    };
+    this._state = Object.assign({}, _defaultState);
     this._storage = FTPStorage.create();
     this._init();
   }
@@ -45,6 +51,11 @@ class FTPConnection extends EventEmitter {
 
   get remoteEndPoint() {
     return `${this._conn.remoteAddress}:${this._conn.remotePort}`;
+  }
+
+  reset() {
+    this._state = Object.assign({}, _defaultState);
+    return this.storage.cd('/');
   }
 
   close() {
