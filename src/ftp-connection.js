@@ -19,7 +19,8 @@ let _defaultState = {
   type: 'A',
   mode: 'S',
   remote: null,
-  rename: null
+  rename: null,
+  rest: 0
 };
 
 class FTPConnection extends EventEmitter {

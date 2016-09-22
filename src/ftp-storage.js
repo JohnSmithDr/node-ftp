@@ -181,16 +181,17 @@ class VFS {
   /**
    * Open read stream of file.
    * @param {string} name
+   * @param {number} start
    * @returns {Promise}
    */
-  openRead(name) {
+  openRead(name, start) {
     let fp = this._resolvePath(name);
     return _exists(fp)
       .then(ex => ex
         ? _stat(fp)
         : _reject('No such file or directory'))
       .then(stat => stat.isFile()
-        ? fs.createReadStream(fp, { flags: 'r' })
+        ? fs.createReadStream(fp, { flags: 'r', start: start })
         : _reject('Not a file'));
   }
 

@@ -69,7 +69,7 @@ function type(args, client) {
       .send(200, `OK. Type ${type} accepted`);
   }
 
-  return client.send(202, `Not supported type: ${type}`);
+  return client.send(504, `Not supported type: ${type}`);
 }
 
 function mode(args, client) {
@@ -82,7 +82,7 @@ function mode(args, client) {
       .send(200, `OK. Mode ${mode} accepted`);
   }
 
-  return client.send(202, `Not supported mode: ${mode}`);
+  return client.send(504, `Not supported mode: ${mode}`);
 }
 
 function port(args, client) {
@@ -138,6 +138,9 @@ function list(args, client) {
         ;
       if (t.state === 'error')
         return client.send(550, 'Error listing files');
+    })
+    .finally(() => {
+      dataToSend = null;
     });
 }
 
@@ -166,7 +169,7 @@ function rnfr(name, client) {
 
 function rnto(dest, client) {
   let src = client.state.rename;
-  if (!src) return client.send(503, 'Bad sequence of commands, call RNFR first');
+  if (!src) return client.send(503, 'Bad sequence of commands, try RNFR first');
   return client.storage.rename(src, dest)
     .then(() => client.send(250, 'Rename OK'))
     .catch(err => client.sendError(550, err));
@@ -184,8 +187,44 @@ function size(name, client) {
     .catch(err => client.sendError(550, err));
 }
 
-function retr(args, client) {
-  // todo: download file
+function rest(args, client) {
+  let rest = Number.parseInt(args);
+  return client.setState('rest', rest)
+    .send(350, `Restarting next transfer from position: ${rest}`);
+}
+
+function retr(name, client) {
+  let remote = client.state.remote, rest = client.state.rest;
+  if (!remote) return client.send(503, 'Bad sequence of commands, try PORT first');
+
+  let streamToTransfer;
+
+  return client.openRead(name, rest)
+    .then(stream => {
+      streamToTransfer = stream;
+      return client.send(150, 'Opening connection for data transfer');
+    })
+    .then(() => {
+      return FTPTransfer
+        .createSend(remote, streamToTransfer)
+        .catch(err => {
+          return client
+            .send(425, 'Cannot open data connection')
+            .thenThrow(err);
+        });
+    })
+    .then(t => t.transfer())
+    .then(t => {
+      if (t.state === 'completed')
+        return client.send(226, 'File transfer completed');
+      if (t.state === 'aborted')
+        ;
+      if (t.state === 'error')
+        return client.send(550, 'Error listing files');
+    })
+    .finally(() => {
+      streamToTransfer = null;
+    });
 }
 
 function stor(args, client) {
@@ -198,10 +237,6 @@ function appe(args, client) {
 
 function abor(args, client) {
   // todo: abort current transfer
-}
-
-function rest(args, client) {
-  // todo: rest
 }
 
 function rein(args, client) {
@@ -217,6 +252,6 @@ function quit(args, client) {
 module.exports = {
   syst, user, pass, feat, opts, noop, type, mode, port,
   pwd,  cwd,  cdup, list, mkd,  rmd,  rnfr, rnto,
-  dele, size, retr, stor, appe, abor, rest,
+  dele, size, rest, retr, stor, appe, abor,
   rein, quit
 };
