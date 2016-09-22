@@ -173,8 +173,10 @@ function dele(name, client) {
     .catch(err => client.sendError(550, err));
 }
 
-function size(args, client) {
-  // todo: get file size
+function size(name, client) {
+  return client.storage.size(name)
+    .then(size => client.send(213, size))
+    .catch(err => client.sendError(550, err));
 }
 
 function retr(args, client) {

@@ -121,6 +121,19 @@ class FTPStorage {
       });
   }
 
+  size(name) {
+    let rfp = this._resolvePath(name);
+    return _exsist(rfp)
+      .then(exists => {
+        if (!exists) return Promise.reject('File does not exist');
+        return _stat(rfp);
+      })
+      .then(stat => {
+        if (!stat.isFile()) return Promise.reject('Not a file');
+        return stat.size;
+      });
+  }
+
   _fileInfo(x) {
     return _stat(x.fullPath)
       .then(stat => {
