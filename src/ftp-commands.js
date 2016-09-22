@@ -199,13 +199,18 @@ function rest(args, client) {
   // todo: rest
 }
 
+function rein(args, client) {
+  // todo: re-initialize connection
+}
+
 function quit(args, client) {
-  // todo: quit
+  return client.send(221, 'Closing connection')
+    .then(() => client.close());
 }
 
 module.exports = {
   syst, user, pass, feat, opts, noop, type, port,
   pwd,  cwd,  cdup, list, mkd,  rmd,  rnfr, rnto,
   dele, size, retr, stor, appe, abor, rest,
-  quit
+  rein, quit
 };

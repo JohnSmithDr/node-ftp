@@ -23,7 +23,7 @@ class FTPConnection extends EventEmitter {
 
   constructor(conn) {
     super();
-    this._dest = conn;
+    this._conn = conn;
     this._state = {
       encoding: 'ascii'
     };
@@ -44,7 +44,15 @@ class FTPConnection extends EventEmitter {
   }
 
   get remoteEndPoint() {
-    return `${this._dest.remoteAddress}:${this._dest.remotePort}`;
+    return `${this._conn.remoteAddress}:${this._conn.remotePort}`;
+  }
+
+  close() {
+    if (this._conn) {
+      this._conn.close();
+      this._conn.destroy();
+      this._conn = null;
+    }
   }
 
   setState(key, value) {
@@ -64,14 +72,14 @@ class FTPConnection extends EventEmitter {
     logger.info('ACK (%s) > %s', this.remoteEndPoint, text);
     return maybe(
       new Promise((resolve, reject) => {
-        this._dest.write(`${text}\r\n`, (err, r) => (err ? reject(err) : resolve(r)));
+        this._conn.write(`${text}\r\n`, (err, r) => (err ? reject(err) : resolve(r)));
       })
       ,callback
     );
   }
 
   _init() {
-    this._dest.on('data', d => {
+    this._conn.on('data', d => {
       let cmd = _parseCommand(d);
       if (cmd) {
         logger.info('CLI (%s) > %s %s', this.remoteEndPoint, cmd.name, cmd.args);
