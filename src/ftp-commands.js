@@ -139,13 +139,13 @@ function list(args, client) {
 function mkd(name, client) {
   client.storage.mkdir(name)
     .then(path => client.send(257, `Directory created: "${path}"`))
-    .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
+    .catch(err => client.sendError(550, err));
 }
 
 function rmd(name, client) {
   client.storage.rmdir(name)
     .then(path => client.send(250, `Directory removed: "${path}"`))
-    .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
+    .catch(err => client.sendError(550, err));
 }
 
 function rnfr(name, client) {
@@ -164,11 +164,13 @@ function rnto(dest, client) {
   if (!src) return client.send(503, 'Bad sequence of commands, call RNFR first');
   return client.storage.rename(src, dest)
     .then(() => client.send(250, 'Rename OK'))
-    .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
+    .catch(err => client.sendError(550, err));
 }
 
-function dele(args, client) {
-  // todo: delete file
+function dele(name, client) {
+  return client.storage.rm(name)
+    .then(() => client.send(250, 'File deleted'))
+    .catch(err => client.sendError(550, err));
 }
 
 function size(args, client) {

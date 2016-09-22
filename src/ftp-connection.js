@@ -13,6 +13,12 @@ function _parseCommand(data) {
   return name ? ({ name, args }) : null;
 }
 
+function _getErrorMessage(err) {
+  if (typeof err === 'string') return err;
+  if (err instanceof Error) return err.message;
+  return err.toString();
+}
+
 class FTPConnection extends EventEmitter {
 
   constructor(conn) {
@@ -48,6 +54,10 @@ class FTPConnection extends EventEmitter {
 
   send(code, message, callback) {
     return this.sendText(`${code} ${message}`, callback);
+  }
+
+  sendError(code, err, callback) {
+    return this.send(code, _getErrorMessage(err), callback);
   }
 
   sendText(text, callback) {
