@@ -213,26 +213,96 @@ function retr(name, client) {
             .thenThrow(err);
         });
     })
-    .then(t => t.transfer())
+    .then(t => {
+      client.setTransfer(t);
+      return t.transfer();
+    })
     .then(t => {
       if (t.state === 'completed')
         return client.send(226, 'File transfer completed');
       if (t.state === 'aborted')
         ;
       if (t.state === 'error')
-        return client.send(550, 'Error listing files');
+        return client.send(550, 'Error sending file');
     })
     .finally(() => {
+      client.setState('rest', 0);
       streamToTransfer = null;
     });
 }
 
 function stor(args, client) {
-  // todo: upload file
+  let remote = client.state.remote;
+  if (!remote) return client.send(503, 'Bad sequence of commands, try PORT first');
+
+  let outputStream;
+
+  return client.openWrite(name)
+    .then(stream => {
+      outputStream = stream;
+      return client.send(150, 'Opening connection for data transfer');
+    })
+    .then(() => {
+      return FTPTransfer
+        .createReceive(remote, outputStream)
+        .catch(err => {
+          return client
+            .send(425, 'Cannot open data connection')
+            .thenThrow(err);
+        });
+    })
+    .then(t => {
+      client.setTransfer(t);
+      return t.transfer();
+    })
+    .then(t => {
+      if (t.state === 'completed')
+        return client.send(226, 'File transfer completed');
+      if (t.state === 'aborted')
+        ;
+      if (t.state === 'error')
+        return client.send(550, 'Error receiving file');
+    })
+    .finally(() => {
+      outputStream = null;
+    });
 }
 
 function appe(args, client) {
-  // todo: append file
+  let remote = client.state.remote;
+  if (!remote) return client.send(503, 'Bad sequence of commands, try PORT first');
+
+  let outputStream;
+
+  return client.openAppend(name)
+    .then(stream => {
+      outputStream = stream;
+      return client.send(150, 'Opening connection for data transfer');
+    })
+    .then(() => {
+      return FTPTransfer
+        .createReceive(remote, outputStream)
+        .catch(err => {
+          return client
+            .send(425, 'Cannot open data connection')
+            .thenThrow(err);
+        });
+    })
+    .then(t => {
+      client.setTransfer(t);
+      return t.transfer();
+    })
+    .then(t => {
+      if (t.state === 'completed')
+        return client.send(226, 'File transfer completed');
+      if (t.state === 'aborted')
+        ;
+      if (t.state === 'error')
+        return client.send(550, 'Error receiving file');
+    })
+    .finally(() => {
+      outputStream = null;
+    });
 }
 
 function abor(args, client) {

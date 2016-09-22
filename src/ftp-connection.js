@@ -30,6 +30,7 @@ class FTPConnection extends EventEmitter {
     this._conn = conn;
     this._state = Object.assign({}, _defaultState);
     this._storage = FTPStorage.create();
+    this._transfer = null;
     this._init();
   }
 
@@ -43,6 +44,10 @@ class FTPConnection extends EventEmitter {
 
   get storage() {
     return this._storage;
+  }
+
+  get transfer() {
+    return this._transfer;
   }
 
   get remoteEndPoint() {
@@ -64,6 +69,11 @@ class FTPConnection extends EventEmitter {
 
   setState(key, value) {
     this._state[key] = value;
+    return this;
+  }
+
+  setTransfer(value) {
+    this._transfer = value;
     return this;
   }
 

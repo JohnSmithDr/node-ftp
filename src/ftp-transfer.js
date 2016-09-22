@@ -47,24 +47,30 @@ class FTPTransfer {
     this._s = 'aborted';
   }
 
-  static createSend(p, d, callback) {
+  /**
+   * Create data transfer for sending.
+   */
+  static createSend(endPoint, input, callback) {
     return maybe(
       new Promise((resolve, reject) => {
-        let conn = net.connect(p.port, p.host, (err) => {
+        let conn = net.connect(endPoint.port, endPoint.host, (err) => {
           if (err) return reject(err);
-          resolve(new FTPTransfer(d, conn));
+          resolve(new FTPTransfer(input, conn));
         });
       }),
       callback
     );
   }
 
-  static createReceive(p, d, callback) {
+  /**
+   * Create data transfer for receiving.
+   */
+  static createReceive(endPoint, output, callback) {
     return maybe(
       new Promise((resolve, reject) => {
-        let conn = net.connect(p.port, p.host, (err) => {
+        let conn = net.connect(endPoint.port, endPoint.host, (err) => {
           if (err) return reject(err);
-          return new FTPTransfer(conn, d);
+          return new FTPTransfer(conn, output);
         });
       }),
       callback
