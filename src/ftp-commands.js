@@ -306,7 +306,14 @@ function appe(args, client) {
 }
 
 function abor(args, client) {
-  // todo: abort current transfer
+  let t = client.transfer;
+
+  if (!t) {
+    return client.send(226, 'No active transfer');
+  }
+
+  t.abort();
+  return client.send(226, 'File transfer aborting');
 }
 
 function rein(args, client) {
