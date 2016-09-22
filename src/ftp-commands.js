@@ -148,12 +148,23 @@ function rmd(name, client) {
     .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
 }
 
-function rnfr(args, client) {
-  // todo: rename from
+function rnfr(name, client) {
+  return client.storage.exists(name)
+    .then(exists => {
+      if (!exists) {
+        return client.send(550, 'Path dose not exist');
+      }
+      client.setState('rename', name);
+      return client.send(350, `Rename started`);
+    });
 }
 
-function rnto(args, client) {
-  // todo: rename to
+function rnto(dest, client) {
+  let src = client.state.rename;
+  if (!src) return client.send(503, 'Bad sequence of commands, call RNFR first');
+  return client.storage.rename(src, dest)
+    .then(() => client.send(250, 'Rename OK'))
+    .catch(err => client.send(550, typeof err === 'string' ? err : err.message));
 }
 
 function dele(args, client) {

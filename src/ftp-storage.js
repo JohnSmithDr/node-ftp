@@ -11,9 +11,10 @@ const _readdir = Promise.promisify(fs.readdir);
 const _mkdir = Promise.promisify(fs.mkdir);
 const _rmdir = Promise.promisify(fs.rmdir);
 const _unlink = Promise.promisify(fs.unlink);
+const _rename = Promise.promisify(fs.rename);
 const _stat = Promise.promisify(fs.stat);
 const _access = Promise.promisify(fs.access);
-const _exsist = (path) => _access(path, fs.constants.F_OK);
+const _exsist = (path) => _access(path, fs.constants.F_OK).then(() => true).catch(err => false);
 
 class FTPStorage {
 
@@ -32,6 +33,10 @@ class FTPStorage {
 
   pwd() {
     return path.resolve.apply(path, this._path);
+  }
+
+  exists(name) {
+    return _exsist(this._resolvePath(name));
   }
 
   cd(name) {
@@ -57,13 +62,9 @@ class FTPStorage {
     }
 
     return _exsist(p)
-      .then(() => _stat(p))
-      .catch(err => {
-        console.log(err);
-        Promise.reject('Not a directory');
-      })
-      .then(r => {
-        if (!r.isDirectory()) return Promise.reject('Directory not found');
+      .then(exists => exists ? _stat(p) : Promise.reject('Directory not found'))
+      .then(stat => {
+        if (!stat.isDirectory()) return Promise.reject('Not a directory');
         this._path = pp;
         return this.pwd();
       });
@@ -87,23 +88,37 @@ class FTPStorage {
   }
 
   mkdir(name) {
-    let rwd = this.rwd();
-    let np = path.join(rwd, name);
-    return _mkdir(np).thenReturn(np);
+    let rfp = this._resolvePath(name);
+    return _mkdir(rfp).thenReturn(rfp);
   }
 
   rmdir(name) {
-    let rwd = this.rwd();
-    let np = path.join(rwd, name);
-    return _stat(np)
+    let rfp = this._resolvePath(name);
+    return _stat(rfp)
       .then(stat => {
         if (!stat.isDirectory()) return Promise.reject('Not a directory');
-        return _rmdir(np).thenReturn(np);
+        return _rmdir(rfp).thenReturn(rfp);
       });
   }
 
   rm(name) {
+    let frp = this._resolvePath(name);
+    return _stat(frp)
+      .then(stat => {
+        if (!stat.isFile()) return Promise.reject('Not a file');
+        return _unlink(frp).thenReturn(frp);
+      });
+  }
 
+  rename(from, to) {
+    let fromPath = this._resolvePath(from);
+    let toPath = this._resolvePath(to);
+    return Promise.all([ _exsist(fromPath), _exsist(toPath) ])
+      .then(r => {
+        if (!r[0]) return Promise.reject('Source path does not exist');
+        if (r[1]) return Promise.reject('Target path already exist');
+        return _rename(fromPath, toPath);
+      });
   }
 
   _fileInfo(x) {
@@ -116,6 +131,10 @@ class FTPStorage {
             isDir: stat.isDirectory()
           });
       });
+  }
+
+  _resolvePath(name) {
+    return path.join(this.rwd(), name);
   }
 
 }
