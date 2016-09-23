@@ -163,6 +163,22 @@ class VFS {
   }
 
   /**
+   * Get last modification time of file.
+   * @param {string} name
+   * @returns {Promise}
+   */
+  mdtm(name) {
+    let fp = this._resolvePath(name);
+    return _exists(fp)
+      .then(ex => ex
+        ? _stat(fp)
+        : _reject('No such file or directory'))
+      .then(stat => stat.isFile()
+        ? stat.mtime
+        : _reject('Not a file'));
+  }
+
+  /**
    * Get file size.
    * @param {string} name
    * @returns {Promise}

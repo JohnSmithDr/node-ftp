@@ -12,7 +12,7 @@ class FTPServer {
   constructor(port) {
     this._port = port;
     this._listener = null;
-    this._features = ['PORT', 'UTF8'];
+    this._features = [ 'PORT', 'OPTS', 'UTF8', 'SIZE', 'MDTM' ];
   }
 
   static create(port) {

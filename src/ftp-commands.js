@@ -1,7 +1,11 @@
 'use strict';
 
+/// See all ftp commands:
+/// https://en.wikipedia.org/wiki/List_of_FTP_commands
+
 const _ = require('lodash');
 const os = require('os');
+const moment = require('moment');
 const stream = require('./stream');
 const listFormatter = require('./list-formatter');
 const FTPTransfer = require('./ftp-transfer');
@@ -17,6 +21,10 @@ function _parseEndPoint(args) {
   if (isNaN(port)) return null;
 
   return { host, port };
+}
+
+function _mdtmFormat(d) {
+  return moment(d).format('YYYYMMDDHHmmss');
 }
 
 function syst(args, client) {
@@ -182,6 +190,12 @@ function dele(name, client) {
     .catch(err => client.sendError(550, err));
 }
 
+function mdtm(name, client) {
+  return client.storage.mdtm(name)
+    .then(d => client.send(213, _mdtmFormat(d)))
+    .catch(err => client.sendError(550, err));
+}
+
 function size(name, client) {
   return client.storage.size(name)
     .then(size => client.send(213, size))
@@ -330,6 +344,6 @@ function quit(args, client) {
 module.exports = {
   syst, user, pass, feat, opts, noop, type, mode, port,
   pwd,  cwd,  cdup, list, mkd,  rmd,  rnfr, rnto,
-  dele, size, rest, retr, stor, appe, abor,
+  dele, mdtm, size, rest, retr, stor, appe, abor,
   rein, quit
 };
