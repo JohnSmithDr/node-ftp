@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const os = require('os');
 const stream = require('./stream');
 const listFormatter = require('./list-formatter');
 const FTPTransfer = require('./ftp-transfer');
@@ -19,7 +20,7 @@ function _parseEndPoint(args) {
 }
 
 function syst(args, client) {
-  return client.send(215, 'Unix');
+  return client.send(215, os.type());
 }
 
 function user(username, client, server) {
